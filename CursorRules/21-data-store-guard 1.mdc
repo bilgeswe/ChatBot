@@ -1,0 +1,23 @@
+---
+description: Hard guard — never auto-run DB migrations/seeds without explicit approval (GPT‑5 optimized)
+alwaysApply: true
+updated: 2025-08-16
+---
+
+<db_change_guard>
+
+  <prohibited_without_approval>
+  - Do **not** execute migrations or seeds automatically (e.g., `prisma migrate`, `drizzle-kit migrate`, `sequelize db:migrate`, `knex migrate`, `rails db:migrate`, `db:seed`).
+  </prohibited_without_approval>
+
+  <explicit_approval_required>
+  - Allowed only after a human posts this exact line in the current thread:
+    `APPROVED: <ticket-id> — apply db changes`
+  </explicit_approval_required>
+
+  <pre_exec_checklist>
+  - Present: diff/plan, target environment, rollback steps, verification queries.
+  - If approval is missing or unclear → **abort** and return the plan.
+  </pre_exec_checklist>
+
+</db_change_guard>

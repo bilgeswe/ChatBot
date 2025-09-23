@@ -1,0 +1,29 @@
+---
+description: Safe workflow for data stores (DB/warehouse/KV/search) — GPT‑5 optimized
+alwaysApply: true
+updated: 2025-08-16
+---
+
+<data_store_workflow>
+
+  <reasoning_effort>Always **HIGH**.</reasoning_effort>
+
+  <before_any_change>
+  - Refresh **metadata/schema** using read‑only access.
+  - Base work on an **actual diff** versus refreshed metadata; never edit prod ad‑hoc.
+  </before_any_change>
+
+  <plan_requirements>
+  - List impacted entities/indexes, lock/latency expectations, data movement steps, verification queries, and **rollback**.
+  </plan_requirements>
+
+  <execution>
+  - Use transactions when possible; chunk heavy ops; verify after (counts/constraints/latency).
+  - Add before/after evidence to the PR.
+  </execution>
+
+  <guards>
+  - Follow `21-data-store-guard.mdc`. No implicit framework commands that generate/run migrations.
+  </guards>
+
+</data_store_workflow>

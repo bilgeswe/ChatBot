@@ -1,0 +1,40 @@
+1) CI=1 npm create next-app@latest aix-chat -- --ts --app --eslint --tailwind --src-dir --import-alias "@/*" --use-npm --turbopack
+   - Scaffolded a new Next.js 15 app (TypeScript, App Router, Tailwind, ESLint, src/ alias) non-interactively with Turbopack enabled.
+
+2) rm -rf aix-chat (preceding the above create command in the same line)
+   - Removed the partially created directory after an interrupted attempt so the generator could run cleanly.
+
+3) cd aix-chat && npm i -D vitest @vitest/coverage-v8 jsdom @testing-library/react @testing-library/jest-dom @testing-library/user-event @types/testing-library__jest-dom happy-dom
+   - Installed Vitest and React Testing Library stack with jsdom/happy-dom for unit testing support.
+
+4) (suggested, skipped) jq ".scripts += { test: \"vitest\", 'test:ui': \"vitest --ui\" }" package.json > package.tmp.json && mv package.tmp.json package.json
+   - Proposed using jq to add Vitest scripts to package.json programmatically. Skipped at prompt; used a Node one-liner instead.
+
+5) node -e "const fs=require('fs');const p=require('./package.json');p.scripts={...p.scripts,test:'vitest',\"test:ui\":'vitest --ui'};fs.writeFileSync('package.json',JSON.stringify(p,null,2));console.log('Updated package.json scripts');" && cat package.json
+   - Added `test` and `test:ui` scripts for Vitest to package.json using a Node one-liner; printed the updated file to verify.
+
+6) npm run test --silent
+   - Ran the Vitest test suite. First run failed with "React is not defined" due to missing import in a JSX-based test; no files changed.
+
+   Note: Edited src/app/page.test.tsx to add `import React from 'react'`, resolving the JSX runtime error in tests.
+
+7) (file change, not a command) Removed src/app/page.test.tsx and added src/components/Hello.tsx with src/components/Hello.test.tsx
+   - Switched to testing a small client component to avoid server component rendering issues in tests.
+
+8) npm run test --silent
+   - Ran the Vitest suite again; all tests passed (2 tests in 1 file). Verified test environment is working.
+
+9) (file changes, not commands) Added src/lib/chat/message.ts and src/lib/chat/message.test.ts
+   - Implemented a pure `createChatMessage` utility with unit tests covering trimming, role validation, deterministic time, and id generation.
+
+10) npm run test --silent
+   - Ran the test suite; all tests passed (6 tests in 2 files). Verified new utility and tests.
+
+11) npm i ai @ai-sdk/openai
+   - Installed the Vercel AI SDK core and OpenAI provider to enable server-side streaming responses.
+
+12) npm i pdfjs-dist mammoth xlsx
+   - Installed client-side parsers for PDF (pdfjs), DOCX (mammoth), and XLSX (xlsx) to extract text from uploads.
+
+13) npm i tesseract.js
+   - Installed Tesseract.js for client-side OCR of images (JPG/PNG) to extract text.

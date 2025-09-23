@@ -1,0 +1,23 @@
+---
+description: Discover external dependency/service versions before work (GPT‑5 optimized)
+alwaysApply: true
+updated: 2025-08-16
+---
+
+<dependency_discovery>
+
+  <discover>
+  - Fetch **actual versions/config** of critical external dependencies/services via discovery endpoints or CLIs.
+  - Save a short snapshot (e.g., `.cursor/context/current-deps.txt`) and reference it in PLAN (`Dependencies: …`).
+  </discover>
+
+  <do_not>
+  - Do **not** auto‑upgrade (`npm update`, `pnpm up -i`, `yarn upgrade`, `poetry update`, etc.) as part of discovery.
+  - Do **not** guess versions; if discovery fails, request the correct endpoint/path.
+  </do_not>
+
+  <next_steps>
+  - If updates are warranted, propose a separate, reversible PR with changelogs and risk notes.
+  </next_steps>
+
+</dependency_discovery>

@@ -1,0 +1,68 @@
+---
+description: Core rules — plan → approve → execute, quality, security, release (GPT‑5 optimized)
+alwaysApply: true
+updated: 2025-08-16
+---
+
+<code_editing_rules>
+
+  <working_mode>
+  - Start in **PLAN**. No code changes yet. Create a concise **Work Package** (≤3 bullets): scope & constraints, acceptance criteria & verification, risks/unknowns.
+  - **Wait for approval** before EXECUTE.
+  - In **EXECUTE**: prefer small, reversible diffs; run only the commands you list in PLAN; produce a clear PR summary (what/why, impacts, follow‑ups).
+  </working_mode>
+
+  <reasoning_effort>
+  - Use **LOW** for trivial/obvious edits (typos, small CSS tweaks, comment/doc updates).
+  - Use **MEDIUM** for routine bug fixes, non‑breaking refactors, small features.
+  - Use **HIGH** for architecture changes, security/privacy sensitive work, **any data‑store change** or release process.
+  </reasoning_effort>
+
+  <persistence>
+  - Do not ask the human to confirm assumptions mid‑task; make the most reasonable assumption, proceed, and list assumptions at the end.
+  - If uncertainty is material, switch to RESEARCH flow (see `10-research-lite.mdc`) before coding.
+  </persistence>
+
+  <tool_budget>
+  - Default: ≤ **5** tool calls per task (search/browse/CLI/etc.).
+  - Research tasks: ≤ **3** external lookups unless PLAN says otherwise.
+  - Avoid parallel discovery unless the PLAN justifies it.
+  </tool_budget>
+
+  <quality>
+  - Validate all external inputs; never swallow errors—provide actionable context.
+  - Config validated at startup; never log secrets.
+  - **Do not remove** any existing function/block/section unless explicitly requested by the human; if truly dead code is identified, propose removal in a separate PR.
+  </quality>
+
+  <version_control_and_prs>
+  - Commits are atomic and **why‑first**.
+  - PR template: problem → solution → verification → risks → rollback; split large/mixed PRs.
+  </version_control_and_prs>
+
+  <security_and_privacy>
+  - Least privilege; environment separation; secrets in a secure store.
+  - For sensitive changes, include a brief **threat/risk note**.
+  - Logs exclude PII; include correlation IDs where useful.
+  </security_and_privacy>
+
+  <observability_and_release>
+  - Provide meaningful logs/metrics/traces for changed paths.
+  - Expose health/readiness where applicable.
+  - Release incrementally (feature flags preferred) and write short post‑release notes (issues, follow‑ups).
+  </observability_and_release>
+
+  <unknowns>
+  - If not 100% certain, **research first** (see `10-research-lite.mdc`), then implement.
+  </unknowns>
+
+  <hard_guards>
+  - Never auto‑run database **migrations/seeds**. Follow `21-data-store-guard.mdc` strictly.
+  </hard_guards>
+
+  <response_style>
+  - Be precise and avoid conflicting instructions.
+  - Prefer diffs/patches and minimal prose; avoid wall‑of‑text explanations unless requested.
+  </response_style>
+
+</code_editing_rules>

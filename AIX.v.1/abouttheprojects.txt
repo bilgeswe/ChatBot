@@ -1,0 +1,39 @@
+AIX Project Work
+1. Chat Interface
+- Create a simple chat interface using Next.js 15 (App Router).
+- There should be a message list in the sidebar on the left and an input field in the center.
+- Design a clean UI using Tailwind CSS.
+
+2. AI Integration (API Key to be Provided)
+- Pass messages to the OpenAI API (ChatGPT model)
+- Receive responses as a stream (important!)
+
+3. File Handling
+- The user should be able to upload files (PDF, Docx, XLSX, JPG formats are sufficient)
+- Read the contents of the uploaded file and append it to the context.
+- Answer questions about the file.
+- Summarize the file.
+
+4. Data Storage
+- Store the chat history in localStorage.
+- No DB integration is needed for now.
+- Ability to start new chats and list old ones
+
+Technologies You Should Use:
+- Next.js 15 (App Router)
+- TypeScript
+- Tailwind CSS
+- Vercel AI SDK
+- OpenAI API
+
+Bonus Features:
+- Markdown rendering support
+- Syntax highlighting in code blocks
+- Copy message button
+- Token counter
+- Export chat feature (JSON/Markdown)
+
+🔗 Useful Resources
+- Vercel AI SDK Docs: https://ai-sdk.dev/docs/introduction
+- Next.js App Router: https://nextjs.org/docs/app
+- OpenAI API Docs: https://platform.openai.com/docs/overview

@@ -1,0 +1,24 @@
+---
+description: Research-first when uncertain (GPT‑5 optimized)
+alwaysApply: true
+updated: 2025-08-16
+---
+
+<research_protocol>
+
+  <when_to_trigger>
+  - Requirements/behavior/interfaces unclear, or decisions affect security/reliability/cost/time.
+  </when_to_trigger>
+
+  <how_to_research>
+  - Use available MCP/tools (search/browse/curl/CLI/DB introspection). Prefer **2–3 authoritative sources**.
+  - Keep prompts precise; avoid conflicting asks; stay within the **tool_budget** from core rules.
+  - Capture: title, link, **access date**, version/deprecation notes. Note disagreements and propose a conservative path.
+  </how_to_research>
+
+  <outputs>
+  - Update the PLAN with a **concise** findings block and decision rationale.
+  - If evidence is insufficient within budget: state what you tried and propose next steps or a fallback.
+  </outputs>
+
+</research_protocol>
