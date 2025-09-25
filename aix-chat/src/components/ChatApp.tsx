@@ -1,9 +1,8 @@
 'use client'
 
 import React from 'react'
-import ChatSidebar from '@/components/ChatSidebar'
-import ChatMessages from '@/components/ChatMessages'
-import ChatInput from '@/components/ChatInput'
+import Sidebar from '@/components/Sidebar'
+import ChatUI from '@/components/ChatUI'
 import { useChatStore } from '@/lib/store/useChatStore'
 import FileUpload from '@/components/FileUpload'
 import { chatToJson, chatToMarkdown, downloadText, importChatFromFile } from '@/lib/export/format'
@@ -12,9 +11,9 @@ export default function ChatApp() {
   const store = useChatStore()
   const { currentChat, newChat, importChat, renameChat, deleteChat } = store
   return (
-    <div className="h-[calc(100vh-96px)] grid grid-cols-1 md:grid-cols-[256px_1fr]">
-      <ChatSidebar store={store} />
-      <div className="flex flex-col min-h-0">
+    <div className="h-[calc(100vh-96px)] flex bg-white">
+      <Sidebar store={store} />
+      <div className="flex flex-col min-h-0 flex-1 bg-white">
         <div className="h-12 border-b border-gray-200 dark:border-neutral-800 flex items-center justify-between px-4 text-sm gap-3">
           <div className="truncate" title={currentChat?.title || 'New Chat'}>
             {currentChat?.title || 'New Chat'}
@@ -98,8 +97,9 @@ export default function ChatApp() {
             </a>
           </div>
         </div>
-        <ChatMessages store={store} />
-        <ChatInput store={store} />
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <ChatUI />
+        </div>
       </div>
     </div>
   )

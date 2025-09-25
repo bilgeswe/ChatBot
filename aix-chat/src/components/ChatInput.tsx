@@ -66,7 +66,7 @@ export default function ChatInput({ store }: { store: ChatStore }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="p-3 border-t border-gray-200 dark:border-neutral-800 flex gap-2">
+    <form onSubmit={handleSubmit} className="p-3 border-t border-gray-200 dark:border-neutral-800 flex gap-2 items-start">
       <input
         className="flex-1 rounded-md border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-sm outline-none"
         placeholder="Type a message..."
@@ -103,6 +103,9 @@ export default function ChatInput({ store }: { store: ChatStore }) {
       >
         Ask about file
       </button>
+      {error && (
+        <div className="text-xs text-red-600 mt-2">{error}</div>
+      )}
     </form>
 
   )

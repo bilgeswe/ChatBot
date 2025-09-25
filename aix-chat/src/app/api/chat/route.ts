@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       messages,
     })
 
-    return result.toAIStreamResponse()
+    return result.toTextStreamResponse()
   } catch (err) {
     return new Response(JSON.stringify({ error: 'Failed to generate response' }), {
       status: 500,
