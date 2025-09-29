@@ -37,10 +37,34 @@ export default function FileUpload() {
     try {
       const text = await extractTextFromFile(file, (p) => setProgress(Math.round(p * 100)))
       if (!currentChatId) newChat(file.name)
-      // Append a system-style preface via user message to keep it simple
-      await Promise.resolve(
-        sendUserMessage(`Context from ${file.name} (${file.type || 'unknown'}):\n\n${text.slice(0, 8000)}`)
-      )
+      
+      // Add file context to the conversation
+      const fileContext = `📄 **File uploaded: ${file.name}**\n\n${text.slice(0, 8000)}`
+      await Promise.resolve(sendUserMessage(fileContext))
+    } finally {
+      setBusy(false)
+      setProgress(null)
+      if (inputRef.current) inputRef.current.value = ''
+    }
+  }
+
+  async function summarizeFile() {
+    const file = inputRef.current?.files?.[0]
+    if (!file) return
+    
+    setError(null)
+    setBusy(true)
+    setProgress(0)
+    
+    try {
+      const text = await extractTextFromFile(file, (p) => setProgress(Math.round(p * 100)))
+      if (!currentChatId) newChat(`Summary of ${file.name}`)
+      
+      // Request a summary of the file
+      const summaryPrompt = `Please provide a comprehensive summary of this file content:\n\n${text.slice(0, 8000)}`
+      await Promise.resolve(sendUserMessage(summaryPrompt))
+    } catch {
+      setError('Failed to process file for summary')
     } finally {
       setBusy(false)
       setProgress(null)
@@ -49,7 +73,7 @@ export default function FileUpload() {
   }
 
   return (
-    <>
+    <div className="flex items-center gap-2">
       <input
         ref={inputRef}
         type="file"
@@ -63,7 +87,15 @@ export default function FileUpload() {
         onClick={openPicker}
         disabled={busy}
       >
-        {busy ? 'Uploading…' : 'Upload'}
+        {busy ? 'Processing…' : 'Upload File'}
+      </button>
+      <button
+        type="button"
+        className="rounded border border-gray-300 dark:border-neutral-700 px-2 py-1 text-xs disabled:opacity-60"
+        onClick={summarizeFile}
+        disabled={busy || !inputRef.current?.files?.[0]}
+      >
+        {busy ? 'Summarizing…' : 'Summarize'}
       </button>
       {typeof progress === 'number' && (
         <span className="ml-2 inline-block h-2 w-24 rounded bg-gray-200 dark:bg-neutral-800 overflow-hidden align-middle">
@@ -76,7 +108,7 @@ export default function FileUpload() {
       {error && (
         <span className="text-xs text-red-600 ml-2">{error}</span>
       )}
-    </>
+    </div>
   )
 }
 

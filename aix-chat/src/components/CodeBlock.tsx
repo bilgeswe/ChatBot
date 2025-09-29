@@ -36,7 +36,7 @@ export default function CodeBlock({ inline, className, children, ...props }: Cod
       >
         Copy
       </button>
-      <pre className={className?.replace('language-', 'hljs language-')} {...props}>
+      <pre className={className?.replace('language-', 'hljs language-')} {...(props as React.HTMLAttributes<HTMLPreElement>)}>
         <code>{codeText}</code>
       </pre>
     </div>

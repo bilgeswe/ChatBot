@@ -14,7 +14,7 @@ export type CreateChatOptions = {
 }
 
 function generateId(prefix?: string): string {
-  const uuid = (globalThis as any).crypto?.randomUUID?.()
+  const uuid = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto?.randomUUID?.()
   const base = uuid ?? Math.random().toString(36).slice(2) + Date.now().toString(36)
   return prefix ? `${prefix}_${base}` : base
 }

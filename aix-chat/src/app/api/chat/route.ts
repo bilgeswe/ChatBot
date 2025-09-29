@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    const candidateMessages = (body as any)?.messages
+    const candidateMessages = (body as { messages?: unknown })?.messages
     if (!Array.isArray(candidateMessages)) {
       return new Response(JSON.stringify({ error: 'messages must be an array' }), {
         status: 400,
@@ -36,8 +36,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Minimal validation of message shapes
-    const messages = candidateMessages.filter((m: any) =>
-      m && typeof m === 'object' && typeof m.role === 'string' && typeof m.content === 'string'
+    const messages = candidateMessages.filter((m: unknown) =>
+      m && typeof m === 'object' && typeof (m as { role?: unknown }).role === 'string' && typeof (m as { content?: unknown }).content === 'string'
     )
     if (messages.length === 0) {
       return new Response(JSON.stringify({ error: 'messages array is empty or invalid' }), {
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     const modelName = process.env.OPENAI_MODEL || 'gpt-4o-mini'
 
     const result = await streamText({
-      model: openai(modelName as any),
+      model: openai(modelName as 'gpt-4o-mini' | 'gpt-4o' | 'gpt-3.5-turbo'),
       system: [
         'You are a concise assistant in a chat app.',
         'Be helpful and safe: do not reveal chain-of-thought; provide answers directly.',
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     })
 
     return result.toTextStreamResponse()
-  } catch (err) {
+  } catch {
     return new Response(JSON.stringify({ error: 'Failed to generate response' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },

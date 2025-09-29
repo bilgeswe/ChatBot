@@ -33,6 +33,7 @@ export type ChatStore = {
  * - Persists after each state change
  */
 export function useChatStore(): ChatStore {
+  console.log('useChatStore called')
   const [chats, setChats] = useState<Chat[]>([])
   const [currentChatId, setCurrentChatId] = useState<string | null>(null)
   const isHydrated = useRef(false)
@@ -41,24 +42,34 @@ export function useChatStore(): ChatStore {
 
   // Derive current chat
   const currentChat = useMemo(
-    () => chats.find((c) => c.id === currentChatId),
+    () => {
+      const found = chats.find((c) => c.id === currentChatId)
+      console.log('Deriving currentChat:', { chats, currentChatId, found })
+      return found
+    },
     [chats, currentChatId]
   )
 
   // Load from localStorage once on mount
   const load = useCallback(() => {
+    console.log('Loading chats from localStorage...')
     const loaded = loadChatsFromLocalStorage(STORAGE_KEY)
+    console.log('Loaded chats:', loaded)
     setChats(Array.isArray(loaded) ? loaded : [])
     if (Array.isArray(loaded) && loaded.length > 0) {
-      // Keep selection if possible; otherwise select first
-      setCurrentChatId((prev) => prev && loaded.some((c) => c.id === prev) ? prev : loaded[0].id)
+      // Select first chat if no current selection
+      const selectedId = loaded[0].id
+      console.log('Setting currentChatId to:', selectedId)
+      setCurrentChatId(selectedId)
     } else {
+      console.log('No chats found, setting currentChatId to null')
       setCurrentChatId(null)
     }
   }, [])
 
   useEffect(() => {
     if (!isHydrated.current) {
+      console.log('Store initialization - calling load()')
       load()
       isHydrated.current = true
     }
@@ -70,13 +81,21 @@ export function useChatStore(): ChatStore {
   }, [chats])
 
   const newChat = useCallback((title?: string): Chat => {
+    console.log('Creating new chat with title:', title)
     const chat = createEmptyChat({ title, idPrefix: 'chat' })
-    setChats((prev) => [chat, ...prev])
+    console.log('Created chat:', chat)
+    setChats((prev) => {
+      const updated = [chat, ...prev]
+      console.log('Updated chats array:', updated)
+      return updated
+    })
+    console.log('Setting currentChatId to:', chat.id)
     setCurrentChatId(chat.id)
     return chat
   }, [])
 
   const selectChat = useCallback((chatId: string) => {
+    console.log('Selecting chat with ID:', chatId)
     setCurrentChatId(chatId)
   }, [])
 
@@ -135,7 +154,7 @@ export function useChatStore(): ChatStore {
 
   const startAssistant = useCallback((): ChatMessage | null => {
     if (!currentChatId) return null
-    const placeholder = createChatMessage('assistant', '', { idPrefix: 'msg' })
+    const placeholder = createChatMessage('assistant', '...', { idPrefix: 'msg' })
     lastAssistantMessageIdRef.current = placeholder.id
     setChats((prev) => appendMessageToChat(prev, currentChatId, placeholder).updatedChats)
     setIsStreaming(true)
@@ -144,10 +163,22 @@ export function useChatStore(): ChatStore {
 
   const updateAssistant = useCallback(
     (content: string, messageId?: string) => {
-      if (!currentChatId) return
+      console.log('updateAssistant called with:', { content, messageId, currentChatId })
+      if (!currentChatId) {
+        console.log('No currentChatId, returning')
+        return
+      }
       const targetId = messageId ?? lastAssistantMessageIdRef.current
-      if (!targetId) return
-      setChats((prev) => updateMessageInChat(prev, currentChatId, targetId, (m) => ({ ...m, content })).updatedChats)
+      console.log('Target message ID:', targetId)
+      if (!targetId) {
+        console.log('No target message ID, returning')
+        return
+      }
+      setChats((prev) => {
+        const result = updateMessageInChat(prev, currentChatId, targetId, (m) => ({ ...m, content }))
+        console.log('Updated chats:', result.updatedChats)
+        return result.updatedChats
+      })
     },
     [currentChatId]
   )

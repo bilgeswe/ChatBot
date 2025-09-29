@@ -51,7 +51,7 @@ export default function ChatInput({ store }: { store: ChatStore }) {
         }
         finalizeAssistant()
       } catch (err) {
-        if ((err as any)?.name === 'AbortError') {
+        if (err instanceof Error && err.name === 'AbortError') {
           // user cancelled — finalize silently
           finalizeAssistant()
         } else {

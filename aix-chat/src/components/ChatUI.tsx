@@ -1,34 +1,56 @@
 'use client'
 
 import { useCallback, useRef, useState } from 'react'
-
-type Msg = { role: 'user' | 'assistant'; content: string }
+import { useChatStore } from '@/lib/store/useChatStore'
 
 export default function ChatUI() {
-  const [messages, setMessages] = useState<Msg[]>([])
   const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const { currentChat, sendUserMessage, startAssistant, updateAssistant, finalizeAssistant, isStreaming, newChat, currentChatId } = useChatStore()
 
   const sendMessage = useCallback(async () => {
     const prompt = input.trim()
-    if (!prompt || loading) return
+    if (!prompt || isStreaming) return
 
-    setLoading(true)
     setError(null)
     abortRef.current?.abort()
     abortRef.current = new AbortController()
 
-    // add user message and assistant placeholder
-    const userMsg: Msg = { role: 'user', content: prompt }
-    const assistantPlaceholder: Msg = { role: 'assistant', content: '' }
-    setMessages((prev) => [...prev, userMsg, assistantPlaceholder])
+    // Ensure we have a current chat, create one if needed
+    let targetChatId = currentChatId
+    if (!targetChatId) {
+      const newChatObj = newChat('New Chat')
+      targetChatId = newChatObj.id
+    }
+
+    // Add user message to store and get the message object
+    const userMessage = sendUserMessage(prompt, targetChatId)
+    
+    // Check if user message was created successfully
+    if (!userMessage) {
+      setError('Failed to create user message - no current chat')
+      return
+    }
+    
     setInput('')
 
-    // backend expects messages: {role, content}[]
+    // Start assistant message
+    startAssistant()
+
+    // Get all messages including the one we just added
+    const allMessages = currentChat?.messages || []
+    const messagesForApi = userMessage ? [...allMessages, userMessage] : allMessages
+    
+    // Ensure we have at least one message
+    if (messagesForApi.length === 0) {
+      setError('No messages to send')
+      return
+    }
+    
+    // Create the payload with all messages
     const payload = {
-      messages: [...messages, userMsg].map((m) => ({ role: m.role, content: m.content })),
+      messages: messagesForApi.map((m) => ({ role: m.role, content: m.content })),
     }
 
     try {
@@ -43,7 +65,7 @@ export default function ChatUI() {
         let message = 'Failed to fetch response'
         try {
           const data = await res.json()
-          message = (data as any)?.error || message
+          message = (data as { error?: string })?.error || message
         } catch {}
         throw new Error(message)
       }
@@ -51,60 +73,52 @@ export default function ChatUI() {
       const reader = res.body?.getReader()
       const decoder = new TextDecoder()
 
-      // stream chunks to the last assistant message
+      // stream chunks to the assistant message
       if (reader) {
+        let accumulatedContent = ''
         while (true) {
           const { done, value } = await reader.read()
           if (done) break
           const chunk = decoder.decode(value, { stream: true })
           if (!chunk) continue
-          setMessages((prev) => {
-            const next = [...prev]
-            const last = next[next.length - 1]
-            if (last && last.role === 'assistant') {
-              next[next.length - 1] = { ...last, content: last.content + chunk }
-            }
-            return next
-          })
+          accumulatedContent += chunk
+          console.log('Streaming chunk:', chunk)
+          console.log('Accumulated content:', accumulatedContent)
+          updateAssistant(accumulatedContent)
         }
       } else {
         // fallback non-streaming
         const text = await res.text()
-        setMessages((prev) => {
-          const next = [...prev]
-          const last = next[next.length - 1]
-          if (last && last.role === 'assistant') {
-            next[next.length - 1] = { ...last, content: text }
-          }
-          return next
-        })
+        console.log('Non-streaming response:', text)
+        updateAssistant(text)
       }
-    } catch (e: any) {
-      setError(e?.message || 'Unknown error')
-      // remove empty assistant placeholder if nothing streamed
-      setMessages((prev) => {
-        const next = [...prev]
-        const last = next[next.length - 1]
-        if (last?.role === 'assistant' && last.content.length === 0) next.pop()
-        return next
-      })
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Unknown error')
+      // Remove empty assistant message if error occurred
+      finalizeAssistant()
     } finally {
-      setLoading(false)
+      finalizeAssistant()
     }
-  }, [input, loading, messages])
+  }, [input, isStreaming, currentChat, sendUserMessage, startAssistant, updateAssistant, finalizeAssistant, newChat, currentChatId])
+
+  const messages = currentChat?.messages || []
+  
+  // Debug logging
+  console.log('ChatUI render - currentChat:', currentChat)
+  console.log('ChatUI render - messages:', messages)
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-4">
       <div className="space-y-2">
         {messages.map((m, i) => (
           <div
-            key={i}
+            key={m.id || i}
             className={
               'p-3 rounded-xl whitespace-pre-wrap break-words ' +
               (m.role === 'user' ? 'bg-blue-100 text-right' : 'bg-gray-100 text-left')
             }
           >
-            {m.content || (m.role === 'assistant' && loading ? 'Loading...' : '')}
+            {m.content || (m.role === 'assistant' && isStreaming ? 'Loading...' : '')}
           </div>
         ))}
       </div>
@@ -126,10 +140,10 @@ export default function ChatUI() {
         />
         <button
           onClick={sendMessage}
-          disabled={loading || !input.trim()}
+          disabled={isStreaming || !input.trim()}
           className="px-4 py-2 bg-blue-500 text-white rounded-xl disabled:opacity-50"
         >
-          {loading ? 'Loading...' : 'Send'}
+          {isStreaming ? 'Loading...' : 'Send'}
         </button>
       </div>
     </div>
